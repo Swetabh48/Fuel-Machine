@@ -15,6 +15,23 @@ export class PoolingController {
         return;
       }
 
+      if (members.length === 0) {
+        res.status(400).json({
+          error: 'members array cannot be empty',
+        });
+        return;
+      }
+
+      // Validate member structure
+      for (const member of members) {
+        if (!member.shipId || member.cbBefore === undefined) {
+          res.status(400).json({
+            error: 'Each member must have shipId and cbBefore',
+          });
+          return;
+        }
+      }
+
       const pool = await this.poolingUseCases.createPool(year, members);
 
       res.status(201).json({
@@ -28,6 +45,7 @@ export class PoolingController {
         },
       });
     } catch (error: any) {
+      console.error('Pool creation error:', error);
       res.status(400).json({ error: error.message });
     }
   }

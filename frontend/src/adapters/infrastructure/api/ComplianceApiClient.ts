@@ -1,21 +1,21 @@
-import { ComplianceBalance } from '../../../core/domain/models/types';
 import { apiClient } from './axiosClient';
 
 export class ComplianceApiClient {
-  async getComplianceBalance(shipId?: string, year?: number): Promise<ComplianceBalance> {
-    const params = new URLSearchParams();
-    if (shipId) params.append('shipId', shipId);
-    if (year) params.append('year', year.toString());
-
-    return apiClient.get(`/compliance/cb?${params.toString()}`);
+  async getComplianceBalance(shipId: string, year: number): Promise<any> {
+    return apiClient.get(`/compliance/balance?shipId=${shipId}&year=${year}`);
   }
 
-  async getAdjustedCB(shipId?: string, year?: number): Promise<ComplianceBalance> {
-    const params = new URLSearchParams();
-    if (shipId) params.append('shipId', shipId);
-    if (year) params.append('year', year.toString());
+  async getAdjustedCB(shipId: string, year: number): Promise<any> {
+    // This endpoint should return: { cbBefore, applied, cbAfter }
+    return apiClient.get(`/compliance/adjusted-cb?shipId=${shipId}&year=${year}`);
+  }
 
-    return apiClient.get(`/compliance/adjusted-cb?${params.toString()}`);
+  async getAllCompliance(): Promise<any> {
+    return apiClient.get('/compliance');
+  }
+
+  async getBalance(): Promise<any> {
+    return apiClient.get('/compliance/balance');
   }
 }
 

@@ -1,24 +1,22 @@
 import { Route } from '../../domain/models/types';
-
-export interface GetRoutesUseCaseInput {
-  vesselType?: string;
-  fuelType?: string;
-  year?: number;
-}
-
-export interface GetRoutesUseCaseOutput {
-  routes: Route[];
-  total: number;
-}
+import { IRouteRepository } from '../../ports/IRouteRepository';
 
 export class GetRoutesUseCase {
-  constructor(private routeRepository: any) {}
+  constructor(private routeRepository: IRouteRepository) {}
 
-  async execute(input: GetRoutesUseCaseInput): Promise<GetRoutesUseCaseOutput> {
-    const routes = await this.routeRepository.getRoutes(input);
-    return {
-      routes,
-      total: routes.length,
-    };
+  async execute(input?: {
+    vesselType?: string;
+    fuelType?: string;
+    year?: number;
+  }): Promise<{ routes: Route[]; total: number }> {
+    try {
+      const routes = await this.routeRepository.getAll(input);
+      return {
+        routes,
+        total: routes.length
+      };
+    } catch (error) {
+      throw new Error(`Failed to get routes: ${error}`);
+    }
   }
 }

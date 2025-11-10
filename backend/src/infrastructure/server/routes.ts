@@ -31,6 +31,9 @@ export function createRoutes(
   router.get('/compliance/all', (req, res) =>
     complianceController.getAllCompliance(req, res)
   );
+  router.get('/compliance/balance', (req, res) =>
+  complianceController.getComplianceBalance(req, res)
+);
 
   // Banking endpoints
   router.get('/banking/records', (req, res) =>

@@ -14,17 +14,28 @@ export const useComparison = () => {
         setError(null);
         const data = await routeApiClient.getComparisonRoutes();
 
+        // Check if data and data.routes exist
+        if (!data || !data.routes || !Array.isArray(data.routes)) {
+          console.warn('No comparison routes available');
+          setComparisonData([]);
+          return;
+        }
+
         const formatted = data.routes.map((item: any) => ({
           routeId: item.routeId,
-          baseline: item.baseline.ghgIntensity,
-          comparison: item.comparison.ghgIntensity,
-          percentDiff: ((item.comparison.ghgIntensity / item.baseline.ghgIntensity - 1) * 100),
-          compliant: item.comparison.ghgIntensity <= TARGET_GHG_INTENSITY,
+          baseline: item.baseline?.ghgIntensity || 0,
+          comparison: item.comparison?.ghgIntensity || 0,
+          percentDiff: item.baseline?.ghgIntensity 
+            ? ((item.comparison?.ghgIntensity || 0) / item.baseline.ghgIntensity - 1) * 100
+            : 0,
+          compliant: (item.comparison?.ghgIntensity || 0) <= TARGET_GHG_INTENSITY,
         }));
 
         setComparisonData(formatted);
       } catch (err: any) {
+        console.error('Comparison fetch error:', err);
         setError(err.message || 'Failed to fetch comparison');
+        setComparisonData([]); // Set empty array on error
       } finally {
         setLoading(false);
       }

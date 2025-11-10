@@ -7,7 +7,6 @@ export class RouteController {
   async getAll(req: Request, res: Response): Promise<void> {
     try {
       const { vesselType, fuelType, year } = req.query;
-
       const filters: any = {};
       if (vesselType) filters.vesselType = String(vesselType);
       if (fuelType) filters.fuelType = String(fuelType);

@@ -29,14 +29,12 @@ export class RouteUseCases {
     if (!baseline) {
       throw new Error('No baseline route set');
     }
-
     const allRoutes = await this.routeRepository.findAll();
     const targetIntensity =
       Number(process.env.TARGET_INTENSITY_2025) || 89.3368;
 
     return allRoutes.map((route) => {
-      const percentDiff =
-        ((route.ghgIntensity / baseline.ghgIntensity) - 1) * 100;
+      const percentDiff = ((route.ghgIntensity / baseline.ghgIntensity) - 1) * 100;
       const compliant = route.ghgIntensity <= targetIntensity;
 
       return {

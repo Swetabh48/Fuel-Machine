@@ -28,10 +28,15 @@ export class BankingController {
     try {
       const { shipId, year, amount } = req.body;
 
-      if (!shipId || !year || !amount) {
+      if (!shipId || !year || amount === undefined) {
         res
           .status(400)
           .json({ error: 'shipId, year, and amount are required' });
+        return;
+      }
+
+      if (amount <= 0) {
+        res.status(400).json({ error: 'amount must be greater than 0' });
         return;
       }
 
@@ -54,8 +59,13 @@ export class BankingController {
     try {
       const { shipId, amount } = req.body;
 
-      if (!shipId || !amount) {
+      if (!shipId || amount === undefined) {
         res.status(400).json({ error: 'shipId and amount are required' });
+        return;
+      }
+
+      if (amount <= 0) {
+        res.status(400).json({ error: 'amount must be greater than 0' });
         return;
       }
 
