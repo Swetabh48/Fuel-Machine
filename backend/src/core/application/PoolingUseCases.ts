@@ -77,4 +77,6 @@ export class PoolingUseCases {
   async getPoolById(id: number): Promise<PoolEntity | null> {
     return this.poolingRepository.findPoolById(id);
   }
+
+  
 }

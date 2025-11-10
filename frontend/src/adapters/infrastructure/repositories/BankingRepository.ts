@@ -2,10 +2,6 @@ import { BankEntry } from '../../../core/domain/models/types';
 import { IBankingRepository } from '../../../core/ports/IBankingRepository';
 import { bankingApiClient } from '../api/BankingApiClient';
 
-/**
- * Adapter: Implements IBankingRepository port
- * Provides banking operation data access via REST API
- */
 export class BankingRepository implements IBankingRepository {
   async getBankRecords(shipId: string, year?: number): Promise<BankEntry[]> {
     const records = await bankingApiClient.getBankRecords(shipId, year);

@@ -32,24 +32,41 @@ export default function PoolingTab() {
       setError(null);
       setDebugInfo(`Fetching CB for ${newShipId} in year ${year}...`);
       
-      const adjustedCb = await complianceApiClient.getAdjustedCB(newShipId, year);
+      // Try to get adjusted CB first
+      let cbValue = 0;
+      let adjustedValue = 0;
       
-      setDebugInfo(`Response: ${JSON.stringify(adjustedCb, null, 2)}`);
+      try {
+        const adjustedCb = await complianceApiClient.getAdjustedCB(newShipId, year);
+        cbValue = adjustedCb.cbBefore || adjustedCb.cb || 0;
+        adjustedValue = adjustedCb.cbAfter || adjustedCb.adjustedCb || cbValue;
+        setDebugInfo(`Adjusted CB Response: ${JSON.stringify(adjustedCb, null, 2)}`);
+      } catch (adjustedErr) {
+        // Fallback to regular CB
+        try {
+          const cbResponse = await complianceApiClient.getComplianceBalance(newShipId, year);
+          cbValue = cbResponse.cb || 0;
+          adjustedValue = cbValue;
+          setDebugInfo(`CB Response: ${JSON.stringify(cbResponse, null, 2)}`);
+        } catch (cbErr: any) {
+          throw new Error(`No compliance data found for ${newShipId} in year ${year}`);
+        }
+      }
 
       const newMember: PoolMember = {
         shipId: newShipId,
-        cbBefore: adjustedCb.cbGco2eq || 0,
-        cbAfter: adjustedCb.cbGco2eq || 0,
-        cbAdjusted: adjustedCb.adjustedCb || 0,
+        cbBefore: cbValue,
+        cbAfter: cbValue, // Initialize with same value
+        cbAdjusted: adjustedValue,
       };
 
       setPoolMembers([...poolMembers, newMember]);
       setNewShipId('');
-      setSuccess(`Added ${newShipId} to pool`);
+      setSuccess(`Added ${newShipId} to pool with CB: ${cbValue.toFixed(2)}`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to add member';
-      setError(`Error adding member: ${errorMsg}`);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to add member';
+      setError(`Error: ${errorMsg}`);
       if (err.response?.data) {
         setDebugInfo(`Error details: ${JSON.stringify(err.response.data, null, 2)}`);
       }
@@ -121,7 +138,7 @@ export default function PoolingTab() {
       setPoolMembers([]);
       
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to create pool';
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to create pool';
       setError(`Error creating pool: ${errorMsg}`);
       if (err.response?.data) {
         setDebugInfo(`Error details: ${JSON.stringify(err.response.data, null, 2)}`);
@@ -141,9 +158,17 @@ export default function PoolingTab() {
       {/* Debug Info */}
       {debugInfo && (
         <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-xs overflow-auto">
-          <div className="flex items-center gap-2 mb-2">
-            <Info className="w-4 h-4" />
-            <span className="font-bold">Debug Info</span>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              <span className="font-bold">Debug Info</span>
+            </div>
+            <button
+              onClick={() => setDebugInfo(null)}
+              className="text-gray-400 hover:text-white text-xs"
+            >
+              ✕
+            </button>
           </div>
           <pre>{debugInfo}</pre>
         </div>
@@ -178,7 +203,7 @@ export default function PoolingTab() {
           <div className="flex gap-4">
             <input
               type="text"
-              placeholder="Ship ID (e.g., SHIP001)"
+              placeholder="Ship ID (e.g., R001)"
               value={newShipId}
               onChange={e => setNewShipId(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && addMember()}
