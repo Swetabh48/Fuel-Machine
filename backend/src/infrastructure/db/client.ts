@@ -58,3 +58,12 @@ export class DatabaseClient {
 }
 
 export const db = new DatabaseClient();
+
+(async () => {
+  try {
+    const res = await pool.query('SELECT NOW()');
+    console.log(`✅ PostgreSQL connected: ${res.rows[0].now}`);
+  } catch (err) {
+    console.error('❌ PostgreSQL connection failed:', err);
+  }
+})();
